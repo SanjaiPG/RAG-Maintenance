@@ -1,0 +1,44 @@
+[
+    {
+        "id": "nist_condition_monitoring",
+        "title": "Comprehensive evaluations of condition monitoring-based technologies in industrial maintenance: A systematic review",
+        "publisher": "NIST",
+        "url": "https://www.nist.gov/publications/comprehensive-evaluations-condition-monitoring-based-technologies-industrial"
+    },
+    {
+        "id": "nist_machinery_maintenance",
+        "title": "Manufacturing Machinery Maintenance",
+        "publisher": "NIST",
+        "url": "https://www.nist.gov/el/applied-economics-office/manufacturing/topics-manufacturing/manufacturing-machinery-maintenance"
+    },
+    {
+        "id": "nist_monitoring_diagnostics",
+        "title": "Monitoring, Diagnostics and Prognostics for Manufacturing Operations",
+        "publisher": "NIST",
+        "url": "https://www.nist.gov/programs-projects/monitoring-diagnostics-and-prognostics-manufacturing-operations"
+    },
+    {
+        "id": "nasa_maintenance",
+        "title": "NPR 8831.2F - Maintenance",
+        "publisher": "NASA",
+        "url": "https://nodis3.gsfc.nasa.gov/displayDir.cfm?Internal_ID=N_PR_8831_002F_&page_name=Chapter7"
+    },
+    {
+        "id": "fluke_vibration",
+        "title": "When and how to use and set up vibration monitoring on assets",
+        "publisher": "Fluke",
+        "url": "https://www.fluke.com/en/learn/blog/condition-monitoring/when-and-how-to-use-and-set-up-vibration-monitoring-on-assets"
+    },
+    {
+        "id": "fluke_thermal",
+        "title": "Using Thermal Imaging to Monitor Motors and Gearboxes",
+        "publisher": "Fluke",
+        "url": "https://www.fluke.com/en-au/learn/blog/motors-drives-pumps-compressors/using-thermal-imaging-to-monitor-motors-and-gearboxes"
+    },
+    {
+        "id": "skf_condition_monitoring",
+        "title": "Condition Monitoring",
+        "publisher": "SKF",
+        "url": "https://www.skf.com/group/products/condition-monitoring"
+    }
+]
