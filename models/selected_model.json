@@ -1,0 +1,6 @@
+{
+    "selected_model": "XGBoost",
+    "selected_threshold": 0.5,
+    "selection_metric": "F1",
+    "validation_samples": 1000
+}
