@@ -1,0 +1,17 @@
+{
+    "features": [
+        "Type",
+        "Air temperature [K]",
+        "Process temperature [K]",
+        "Rotational speed [rpm]",
+        "Torque [Nm]",
+        "Tool wear [min]"
+    ],
+    "target": "Machine failure",
+    "random_state": 42,
+    "train_samples": 8000,
+    "validation_samples": 1000,
+    "negative_samples": 7729,
+    "positive_samples": 271,
+    "xgboost_scale_pos_weight": 28.52029520295203
+}
