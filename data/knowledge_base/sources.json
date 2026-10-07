@@ -3,7 +3,7 @@
         "id": "nist_condition_monitoring",
         "title": "Comprehensive evaluations of condition monitoring-based technologies in industrial maintenance: A systematic review",
         "publisher": "NIST",
-        "url": "https://www.nist.gov/publications/comprehensive-evaluations-condition-monitoring-based-technologies-industrial"
+        "url": "https://tsapps.nist.gov/publication/get_pdf.cfm?pub_id=959739"
     },
     {
         "id": "nist_machinery_maintenance",
@@ -36,9 +36,9 @@
         "url": "https://www.fluke.com/en-au/learn/blog/motors-drives-pumps-compressors/using-thermal-imaging-to-monitor-motors-and-gearboxes"
     },
     {
-        "id": "skf_condition_monitoring",
-        "title": "Condition Monitoring",
+        "id": "skf_machine_health",
+        "title": "Machine health monitor",
         "publisher": "SKF",
-        "url": "https://www.skf.com/group/products/condition-monitoring"
+        "url": "https://evolution.skf.com/machine-health-monitor/"
     }
 ]

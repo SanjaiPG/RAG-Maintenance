@@ -6,3 +6,4 @@ joblib
 shap==0.46.0
 requests
 beautifulsoup4
+pypdf
