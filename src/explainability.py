@@ -1,7 +1,3 @@
-"""
-End-to-end evaluation: XGBoost prediction -> SHAP -> case-specific retrieval
--> claim-level answer with citations -> claim-level support check.
-"""
 
 import json
 import os
@@ -15,9 +11,6 @@ import shap
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-# --------------------------------------------------------------------------
-# Configuration
-# --------------------------------------------------------------------------
 
 FEATURES = [
     "Type",
@@ -39,19 +32,19 @@ PASSAGES_FILE = "data/knowledge_base/index/passages.joblib"
 OUTPUT_FILE = "results/end_to_end_evaluation.csv"
 
 THRESHOLD = 0.50
-WATCH_LOW = 0.10          # below threshold but not negligible -> "watch" band
+WATCH_LOW = 0.10         
 
 N_FAILED = 10
 N_NON_FAILED = 10
 RANDOM_STATE = 42
 
 TOP_K_RETRIEVAL = 5
-RETRIEVAL_POOL = 50       # candidates examined before filtering
-MIN_SCORE = 0.02          # minimum cosine similarity
-MAX_PER_SOURCE = 2        # max passages from one source
-MIN_ACTION_TERMS = 1      # passage must mention >= this many action terms
+RETRIEVAL_POOL = 50      
+MIN_SCORE = 0.02        
+MAX_PER_SOURCE = 2        
+MIN_ACTION_TERMS = 1      
 
-N_SHAP_FACTORS = 3        # top SHAP drivers used in query/question
+N_SHAP_FACTORS = 3        
 
 ACTION_TERM_PATTERN = re.compile(
     r"vibration|thermal|temperature|overheat\w*|lubric\w*|wear|torque|"
@@ -59,15 +52,10 @@ ACTION_TERM_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# Feature-name prefixes a ColumnTransformer may add
 TRANSFORMER_PREFIXES = (
     "categorical__", "numerical__", "cat__", "num__", "remainder__"
 )
 
-
-# --------------------------------------------------------------------------
-# Loading
-# --------------------------------------------------------------------------
 
 def load_model():
     return joblib.load(MODEL_FILE)
@@ -83,10 +71,6 @@ def load_retrieval_index():
     passages = joblib.load(PASSAGES_FILE)
     return vectorizer, matrix, passages
 
-
-# --------------------------------------------------------------------------
-# Prediction and SHAP
-# --------------------------------------------------------------------------
 
 def map_feature(transformed_name):
     """Map a transformed column name back to one of FEATURES. Never skips."""
@@ -151,8 +135,6 @@ def compute_shap_matrix(model, X):
             f"{names}"
         )
 
-    # Additivity check: base value + sum(SHAP) should reproduce the model
-    # probability (via sigmoid).
     base = float(np.ravel(explainer.expected_value)[0])
     prob_from_shap = 1.0 / (1.0 + np.exp(-(base + values.sum(axis=1))))
     prob_model = model.predict_proba(X)[:, 1]
@@ -182,10 +164,6 @@ def rank_factors(shap_row):
     factors.sort(key=lambda f: abs(f["shap"]), reverse=True)
     return factors
 
-
-# --------------------------------------------------------------------------
-# Case conditions (screens based on the AI4I failure-mode definitions)
-# --------------------------------------------------------------------------
 
 def reference_stats(test_df):
     return {
@@ -243,10 +221,6 @@ def toward_failure_features(factors, n=N_SHAP_FACTORS):
     top = factors[:n]
     return [f["feature"] for f in top if f["shap"] > 1e-12]
 
-
-# --------------------------------------------------------------------------
-# Question and retrieval query
-# --------------------------------------------------------------------------
 
 def build_question(row, probability, factors, flags):
     factor_text = ", ".join(
@@ -306,10 +280,6 @@ def build_retrieval_query(flags, factors):
     return " ".join(p for p in parts if p)
 
 
-# --------------------------------------------------------------------------
-# Retrieval
-# --------------------------------------------------------------------------
-
 def retrieve_passages(query, vectorizer, matrix, passages,
                       top_k=TOP_K_RETRIEVAL):
     query_vector = vectorizer.transform([query])
@@ -334,7 +304,6 @@ def retrieve_passages(query, vectorizer, matrix, passages,
         if passage_id in seen_ids:
             continue
 
-        # Skip passages with no maintenance-action content
         distinct_terms = {
             m.group(0).lower() for m in ACTION_TERM_PATTERN.finditer(text)
         }
@@ -393,13 +362,6 @@ def get_citation_string(retrieved):
         for r in retrieved
     )
 
-
-# --------------------------------------------------------------------------
-# Claim-level answer generation
-# --------------------------------------------------------------------------
-
-# Each rule: triggered by case flags or by the model's top drivers; supported
-# only if a retrieved passage matches `pattern` (whole-word regex).
 RULES = [
     {
         "id": "thermal",
@@ -584,11 +546,6 @@ def assess_support(supported, unsupported):
         return "PARTIALLY_SUPPORTED", len(supported), total
     return "SUPPORTED", len(supported), total
 
-
-# --------------------------------------------------------------------------
-# Record creation
-# --------------------------------------------------------------------------
-
 def create_case_record(case_id, original_index, row, probability, prediction,
                        factors, flags, derived, question, retrieval_query,
                        retrieved, answer, supported, unsupported, support,
@@ -637,11 +594,6 @@ def create_case_record(case_id, original_index, row, probability, prediction,
 
     return record
 
-
-# --------------------------------------------------------------------------
-# Main
-# --------------------------------------------------------------------------
-
 def main():
     os.makedirs("results", exist_ok=True)
 
@@ -674,7 +626,6 @@ def main():
     print(f"Failed cases    : {len(failed)}")
     print(f"Non-failed cases: {len(non_failed)}")
 
-    # Batch computations (done once)
     X = selected[FEATURES]
     probabilities = model.predict_proba(X)[:, 1]
     shap_matrix = compute_shap_matrix(model, X)

@@ -1,29 +1,6 @@
-"""
-End-to-end evaluation (Req 8).
-
-All heavy-lifting — SHAP computation, feature mapping, retrieval, claim-level
-answer generation, and support assessment — is imported from explainability.py,
-which contains the single, canonical implementation for this project.
-
-Fixed issues resolved here:
-  * SHAP values were all-zero because the old per-row mapping used hard-coded
-    prefixes ("cat__" / "num__") that did not match the ColumnTransformer's
-    actual output names ("categorical__" / "numerical__").  The batch
-    compute_shap_matrix() in explainability.py uses map_feature() with
-    TRANSFORMER_PREFIXES that covers both naming conventions.
-  * RAG answers were static boilerplate because the retrieval query did not
-    use real SHAP drivers (which were zeroed out) and the answer was generated
-    by simple keyword presence rather than claim-level matching.  The
-    claim-level pipeline in explainability.py checks each supported action
-    against a matched passage before including it in the answer.
-"""
-
 import os
 import pandas as pd
 
-# ---------------------------------------------------------------------------
-# All logic lives in explainability.py — import everything from there.
-# ---------------------------------------------------------------------------
 from explainability import (
     FEATURES,
     TARGET,
@@ -59,9 +36,6 @@ def main():
     print("END-TO-END RAG EVALUATION")
     print("=" * 70)
 
-    # -----------------------------------------------------------------------
-    # Load artefacts
-    # -----------------------------------------------------------------------
     print("\nLoading model...")
     model = load_model()
 
@@ -73,10 +47,6 @@ def main():
     vectorizer, matrix, passages = load_retrieval_index()
     print(f"Index size: {len(passages)} passages")
 
-    # -----------------------------------------------------------------------
-    # Select 10 failed + 10 non-failed cases (Req 8 requires ≥ 20 cases
-    # including both categories)
-    # -----------------------------------------------------------------------
     failed = test_df[test_df[TARGET] == 1].sample(
         n=N_FAILED, random_state=RANDOM_STATE
     )
@@ -91,17 +61,10 @@ def main():
     print(f"  Failed         : {len(failed)}")
     print(f"  Non-failed     : {len(non_failed)}")
 
-    # -----------------------------------------------------------------------
-    # Batch predictions and SHAP (single pass — correct feature mapping via
-    # map_feature() in explainability.py)
-    # -----------------------------------------------------------------------
     X = selected[FEATURES]
     probabilities = model.predict_proba(X)[:, 1]
     shap_matrix = compute_shap_matrix(model, X)
 
-    # -----------------------------------------------------------------------
-    # Per-case pipeline
-    # -----------------------------------------------------------------------
     print("\nRunning cases...")
     records = []
 
@@ -112,24 +75,17 @@ def main():
         probability = float(probabilities[position])
         prediction = int(probability >= THRESHOLD)
 
-        # SHAP factors — aggregated back to original features (log-odds)
         factors = rank_factors(shap_matrix[position])
 
-        # Condition flags derived from sensor values (mirrors AI4I failure
-        # mode definitions — heat dissipation, power band, overstrain, wear)
         flags, derived = derive_conditions(row, ref)
 
-        # RAG query driven by real SHAP drivers + active condition flags
         question = build_question(row, probability, factors, flags)
         retrieval_query = build_retrieval_query(flags, factors)
 
-        # Retrieval with action-term filtering and per-source diversity limit
         retrieved = retrieve_passages(
             retrieval_query, vectorizer, matrix, passages
         )
 
-        # Claim-level answer: each action is only included when a retrieved
-        # passage lexically supports it
         supported, unsupported = build_claims(flags, factors, retrieved)
         answer = generate_answer(
             probability, prediction, factors, flags, derived,
@@ -153,15 +109,9 @@ def main():
             f"Claims={n_supported}/{n_total}, Support={support}"
         )
 
-    # -----------------------------------------------------------------------
-    # Persist results
-    # -----------------------------------------------------------------------
     results_df = pd.DataFrame(records)
     results_df.to_csv(OUTPUT_FILE, index=False)
 
-    # -----------------------------------------------------------------------
-    # Summary report
-    # -----------------------------------------------------------------------
     print("\n" + "=" * 70)
     print("EVALUATION COMPLETE")
     print("=" * 70)
